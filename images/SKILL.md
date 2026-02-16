@@ -12,6 +12,30 @@ description: >
 
 Analyze images on a webpage or site for SEO and performance optimization. Provide actionable recommendations sorted by impact.
 
+## CRITICAL: Data Extraction Method
+
+**WebFetch converts HTML to markdown and may lose `<img>` tag attributes** like `alt`, `loading`, `width`, `height`, `srcset`, and `sizes`. It also strips `<picture>` elements and `<source>` tags entirely.
+
+### Correct approach:
+
+**Use `curl` via Bash to extract image tags accurately:**
+```bash
+# Get all <img> tags with their attributes
+curl -sL [URL] | grep -oP '<img[^>]+>' | head -20
+
+# Check for <picture> elements and srcset
+curl -sL [URL] | grep -i -E '(<picture|srcset|<source.*type=)'
+
+# Check for lazy loading
+curl -sL [URL] | grep -i 'loading=' | head -10
+```
+
+**Use WebFetch** only for understanding the general page layout and visible image context.
+
+**NEVER report alt text as "missing" based solely on WebFetch output.** Always verify with `curl`.
+
+---
+
 ## Input
 
 Expects one of:

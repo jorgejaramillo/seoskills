@@ -19,6 +19,23 @@ Internal links are one of the few ranking levers site owners fully control. They
 
 ---
 
+## CRITICAL: Data Extraction Method
+
+**WebFetch strips the HTML `<head>` section** when converting to markdown. This means it CANNOT see canonical tags, hreflang, or meta robots directives — all of which affect internal linking analysis (e.g., detecting canonicalized duplicates or noindex pages that shouldn't receive links).
+
+### Correct approach for each page analyzed:
+
+**Use `curl` via Bash for `<head>` tags:**
+```bash
+curl -sL [URL] | grep -i -E '(rel="canonical"|meta name="robots"|hreflang|<title)'
+```
+
+**Use WebFetch for body content:** internal links, anchor text, navigation, footer, and visible page structure.
+
+**NEVER report canonical tags or meta robots as "not found" based solely on WebFetch.** Always verify with `curl`.
+
+---
+
 ## Before You Start
 
 Understand the scope before diving in:
