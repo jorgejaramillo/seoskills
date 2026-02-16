@@ -1,3 +1,4 @@
+<!-- Updated: 2026-02-14 -->
 ---
 name: internal-linking
 description: >
