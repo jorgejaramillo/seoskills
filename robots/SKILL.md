@@ -40,42 +40,37 @@ Before doing anything, internalize these rules — they're the foundation for ev
 - robots.txt is PUBLIC — never list sensitive paths in it (security through obscurity is a bad idea).
 
 ### AI Crawler Landscape (2025-2026)
-For the `references/ai-crawlers.md` file, read it before generating or auditing any robots.txt that deals with AI bots. It contains the comprehensive, up-to-date list of AI crawler user-agents, their purposes, and recommended strategies.
+Known AI training bots to block: GPTBot, Google-Extended, anthropic-ai, ClaudeBot, CCBot, FacebookBot, Bytespider, Applebot-Extended, Diffbot, Omgili, img2dataset, cohere-ai, AI2Bot.
+Known AI search/RAG bots to allow explicitly: ChatGPT-User, PerplexityBot, YouBot.
 
 ---
 
 ## Workflow 1: VALIDATE a robots.txt
 
-When the user provides a robots.txt (as text, file, or URL to fetch), run validation.
+When the user provides a robots.txt (as text, file, or URL to fetch), run validation manually.
 
-### Step 1: Run the validation script
+### Step 1: Analyze the file
 
-```bash
-python3 /path/to/skill/scripts/validate_robots.py <<'ROBOTS_INPUT'
-<paste or pipe the robots.txt content here>
-ROBOTS_INPUT
-```
-
-The script checks for:
+Check for:
 - Syntax errors (invalid directives, missing user-agent before rules, malformed lines)
 - Logic errors (conflicting Allow/Disallow, overly broad blocks, duplicate rules)
-- SEO warnings (blocking CSS/JS, blocking sitemap URLs, missing Sitemap directive, blocking crawlers from canonical pages)
-- AI crawler coverage (whether known AI bots are addressed)
-- Best practice violations (file too large, sensitive paths exposed, missing wildcard user-agent)
+- SEO warnings (blocking CSS/JS, missing Sitemap directive, blocking crawlers from canonical pages)
+- AI crawler coverage (whether known AI training bots are addressed)
+- Best practice violations (sensitive paths exposed, missing wildcard user-agent)
 
 ### Step 2: Interpret and present results
 
-After running the script, interpret the output and explain each issue to the user in plain language. Group findings by severity:
+Group findings by severity:
 
-1. **ERRORS** — Things that are broken and will cause unexpected crawler behavior
-2. **WARNINGS** — Things that could hurt SEO or lead to unintended blocking
-3. **INFO** — Suggestions and best practices
+1. **ERRORS** — Broken, causes unexpected crawler behavior
+2. **WARNINGS** — Could hurt SEO or lead to unintended blocking
+3. **INFO** — Suggestions
 
-For each issue, explain **what** it is, **why** it matters, and **how** to fix it. Provide the corrected directive.
+For each issue, explain **what** it is, **why** it matters, and **how** to fix it.
 
 ### Step 3: Offer a corrected version
 
-After explaining issues, generate a corrected robots.txt and show it to the user with a diff-style explanation of what changed and why. Do NOT write the corrected file to outputs — present it inline in the conversation.
+Generate a corrected robots.txt and show it inline. Do NOT write to disk.
 
 ---
 
@@ -85,33 +80,29 @@ When the user wants to create a robots.txt from scratch, gather requirements fir
 
 ### Step 1: Gather context
 
-Ask the user (or infer from context):
-1. **What CMS/platform?** (WordPress, Shopify, Next.js, Hugo, custom, etc.)
-2. **What type of site?** (ecommerce, blog, SaaS, corporate, portfolio, etc.)
-3. **What should be blocked?** (admin areas, internal search, user accounts, staging, API endpoints, etc.)
-4. **AI crawler policy?** (block all AI training, allow AI search but block training, allow everything, selective per-bot)
-5. **Do they have a sitemap URL?**
-6. **Any specific bots to handle differently?** (rate limiting Bingbot, blocking specific scrapers, etc.)
+Infer from context or ask only what's missing:
+1. **CMS/platform** (WordPress, Shopify, Next.js, custom, etc.)
+2. **Site type** (ecommerce, blog, SaaS, corporate, etc.)
+3. **AI crawler policy** (block training only, block all AI, allow all)
+4. **Sitemap URL**
 
 ### Step 2: Generate the file
 
-Based on the answers, generate a well-commented robots.txt following these principles:
+**CRITICAL RULES:**
+- **Only include Disallow rules for paths that actually exist on the site.** Do NOT invent or assume paths. If you haven't confirmed a path exists (via sitemap, crawl, or the user), do not include it.
+- **No comments.** Do not add `#` comment lines. The file must be clean and minimal.
+- **No header blocks.** No "last updated", no contact info, no purpose explanation.
+- Group blocks logically: wildcard `*` first, then AI training bots (Disallow: /), then AI search bots (Allow: /).
+- `Sitemap:` goes at the very bottom.
+- Never block CSS, JS, or image files needed for rendering.
 
-- Always start with a header comment block explaining the file's purpose, last update date, and contact
-- Group directives logically: traditional search engines first, then AI crawlers, then the wildcard fallback
-- Add inline comments explaining each block's purpose
-- Include `Sitemap:` directive(s) at the bottom with absolute URLs
-- Use the most restrictive approach by default — it's safer to block too much and then allow than vice versa
-- For ecommerce: block cart, checkout, account, internal search, faceted navigation parameters
-- For WordPress: block `/wp-admin/` but allow `/wp-admin/admin-ajax.php`, block `/wp-includes/`
-- For any site: block `/cgi-bin/`, `/tmp/`, login/register pages, print-view URLs, internal API endpoints
-- Never block CSS, JS, or image files that are needed for rendering
+**Only add AI crawler blocks if the user requests an AI policy.** If they don't mention AI bots, omit those blocks entirely.
 
-Present the generated robots.txt inline in the conversation. Do NOT write to outputs. Let the user copy it themselves.
+Present the generated robots.txt inline in the conversation. Do NOT write to disk.
 
 ### Step 3: Validate the generated file
 
-Run the validation script on the generated file as a sanity check. Report any issues.
+Manually check the generated file for syntax errors and logic conflicts. Report any issues.
 
 ---
 
@@ -129,7 +120,7 @@ Same as Workflow 1, Step 1.
 
 ### Step 3: Deep SEO analysis
 
-Go beyond syntax validation. Read the `references/ai-crawlers.md` file and analyze:
+Go beyond syntax validation. Analyze:
 
 1. **Crawl Budget Impact**: Are there patterns that waste crawl budget? (e.g., not blocking faceted nav, internal search, paginated archives)
 2. **Indexation Risk**: Are important pages accidentally blocked? Are canonical-tagged pages blocked?
@@ -152,64 +143,47 @@ Present findings as a structured analysis with:
 
 ## Common Patterns Reference
 
-### WordPress
+These are **reference patterns only**. Only include a Disallow rule if the path has been confirmed to exist on the specific site being analyzed.
+
+### WordPress (confirmed paths)
 ```
 User-agent: *
 Disallow: /wp-admin/
 Allow: /wp-admin/admin-ajax.php
 Disallow: /wp-includes/
-Disallow: /wp-content/plugins/
-Disallow: /trackback/
-Disallow: /feed/
-Disallow: /comments/feed/
 Disallow: /?s=
-Disallow: /search/
-Disallow: /author/
-Disallow: /tag/*/feed/
-Disallow: /category/*/feed/
+
+Sitemap: https://example.com/sitemap.xml
 ```
 
-### Shopify
+### Shopify (confirmed paths)
 ```
 User-agent: *
 Disallow: /admin
 Disallow: /cart
-Disallow: /orders
-Disallow: /checkouts/
 Disallow: /checkout
-Disallow: /carts
 Disallow: /account
-Disallow: /collections/*+*
-Disallow: /collections/*%2B*
-Disallow: /collections/*%2b*
-Disallow: /blogs/*+*
-Disallow: /blogs/*%2B*
-Disallow: /blogs/*%2b*
 Disallow: /*?*sort_by*
 Disallow: /*?*q=*
-Disallow: /search
-Disallow: /apple-app-site-association
-Disallow: /.well-known
+
+Sitemap: https://example.com/sitemap.xml
 ```
 
-### SaaS / Web Application
+### SaaS / Web Application (confirmed paths only)
 ```
 User-agent: *
 Disallow: /app/
 Disallow: /dashboard/
 Disallow: /api/
-Disallow: /internal/
 Disallow: /admin/
 Disallow: /login
 Disallow: /register
-Disallow: /account/
-Disallow: /settings/
-Allow: /api/docs/
+
+Sitemap: https://example.com/sitemap.xml
 ```
 
 ### AI Crawler Block (Training Only — Allow AI Search)
 ```
-# AI training crawlers - BLOCK
 User-agent: GPTBot
 Disallow: /
 
@@ -217,6 +191,9 @@ User-agent: Google-Extended
 Disallow: /
 
 User-agent: anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
 Disallow: /
 
 User-agent: CCBot
@@ -234,13 +211,12 @@ Disallow: /
 User-agent: Diffbot
 Disallow: /
 
-User-agent: Omgili
+User-agent: cohere-ai
 Disallow: /
 
-User-agent: img2dataset
+User-agent: AI2Bot
 Disallow: /
 
-# AI search/retrieval crawlers - ALLOW
 User-agent: ChatGPT-User
 Allow: /
 
@@ -255,8 +231,8 @@ Allow: /
 
 ## Important Reminders
 
-- All generation and validation happens inline in the conversation. Do NOT create output files for robots.txt content — the user should copy-paste it into their site's root.
-- The validation script (`scripts/validate_robots.py`) is the primary tool. Always run it.
-- For AI crawler questions, always read `references/ai-crawlers.md` first for the latest bot list.
-- Be opinionated but explain your reasoning. If something is a best practice, say so and explain why.
-- When in doubt, be conservative — it's better to accidentally block something non-critical than to accidentally expose the entire site.
+- All generation and validation happens inline in the conversation. Do NOT write to disk — the user copy-pastes it themselves.
+- **Never invent paths.** Only Disallow paths confirmed to exist on the specific site (found in sitemap, visible in nav, or confirmed by the user).
+- **No comments in the output.** Clean file only.
+- Be concise. A minimal robots.txt is better than a bloated one with guessed rules.
+- If the user doesn't mention AI bots, don't add AI crawler blocks.
