@@ -1,4 +1,3 @@
-<!-- Updated: 2026-02-14 -->
 ---
 name: seo-images
 description: >
