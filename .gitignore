@@ -1,2 +1,15 @@
-internal-linking/.DS_Store
+# macOS
 .DS_Store
+
+# Credenciales y configuración local
+.env
+.claude/
+
+# Reportes generados (son output, no código)
+*.pdf
+informe_*.py
+outputs/
+
+# Python
+__pycache__/
+*.pyc
