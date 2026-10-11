@@ -5,10 +5,13 @@
 .env
 .claude/
 
-# Reportes generados (son output, no código)
+# Datos de clientes y salidas generadas (no son código)
+crawler/output/
+report/data/
+report/report.html
+outputs/
 *.pdf
 informe_*.py
-outputs/
 
 # Python
 __pycache__/

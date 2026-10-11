@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light">
+<title>Informe SEO</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --pico-font-size: 100%;
+    --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a; --series-4:#eda100;
+    --series-5:#e87ba4; --series-6:#008300; --series-7:#6250d6; --series-8:#e34948;
+    /* Estado en marcas (barras) */
+    --st-good:#0ca30c; --st-warning:#fab219; --st-serious:#ec835a; --st-critical:#d03b3b; --st-info:#2a78d6;
+    /* Estado en texto: pasos más oscuros para leerse sobre blanco */
+    --tx-good:#067647; --tx-warn:#8a6100; --tx-high:#b54708; --tx-bad:#b42318; --tx-muted:#6b6a65;
+    --grid:#e1e0d9; --axis:#c3c2b7; --ink-2:#52514e;
+  }
+  body { background: #fff; }
+  main { padding-top: 0; }
+  header.container { padding-block: 2.5rem 1rem; }
+  section { padding-block: 1.5rem; }
+  section + section { border-top: 1px solid var(--pico-muted-border-color); }
+  h2 { margin-bottom: .25rem; }
+  .meta { color: var(--tx-muted); font-size: .85rem; margin-bottom: 1rem; }
+  .score { font-weight: 400; color: var(--tx-muted); font-size: 1rem; margin-left: .5rem; }
+  .stats { display: grid; gap: 1.25rem 2rem; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); margin: 1.25rem 0 1.75rem; }
+  .stat p { margin: 0; }
+  .stat .label { font-size: .8rem; color: var(--tx-muted); }
+  .stat .value { font-size: 1.5rem; font-weight: 600; line-height: 1.3; font-variant-numeric: tabular-nums; }
+  .stat .hint { font-size: .75rem; color: var(--tx-muted); }
+  .tag { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .t-good { color: var(--tx-good); } .t-warn, .t-medium { color: var(--tx-warn); }
+  .t-high { color: var(--tx-high); } .t-bad, .t-critical { color: var(--tx-bad); } .t-low, .t-info { color: var(--tx-muted); }
+  .chart { margin: 0 0 1.75rem; }
+  .chart h4 { font-size: .95rem; margin-bottom: .5rem; }
+  .chart-box { position: relative; height: 260px; max-width: 760px; }
+  details { margin-bottom: .5rem; }
+  details.finding summary { font-weight: 500; }
+  details.finding summary .tag { margin-right: .6rem; }
+  .finding dl { margin: .5rem 0 1rem; } .finding dt { font-weight: 600; font-size: .85rem; } .finding dd { margin: 0 0 .5rem; }
+  .finding ul { margin: 0; font-size: .85rem; word-break: break-all; }
+  td, th { font-size: .85rem; vertical-align: top; }
+  td { word-break: break-word; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  pre { white-space: pre-wrap; }
+  .empty { color: var(--tx-muted); font-style: italic; }
+  @media print { details { open: true; } }
+</style>
+</head>
+<body>
+<header class="container">
+  <h1 id="title">Informe SEO</h1>
+  <p class="meta" id="subtitle"></p>
+</header>
+<main class="container" id="app"></main>
+<footer class="container meta"><p id="footer"></p></footer>
+
+<script id="report-data" type="application/json">/*__DATA__*/</script>
+<script>
+(() => {
+  const R = JSON.parse(document.getElementById("report-data").textContent);
+  const SEV = { critical: ["Crítico", 0], high: ["Alto", 1], medium: ["Medio", 2], low: ["Bajo", 3] };
+  const LEVEL = { alto: 3, medio: 2, bajo: 1, high: 3, medium: 2, low: 1 };
+  const STATE = { good: "Bien", warn: "Revisar", bad: "Crítico" };
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const scoreState = s => s == null ? null : s >= 80 ? "good" : s >= 60 ? "warn" : "bad";
+  const scoreText = s => s == null ? "—" : `${s}/100`;
+  const MARK = { good: "--st-good", warn: "--st-warning", warning: "--st-warning", serious: "--st-serious",
+    bad: "--st-critical", critical: "--st-critical", high: "--st-serious", medium: "--st-warning", low: "--st-info", info: "--st-info" };
+  const color = (name, i) => css(MARK[name] || `--series-${(typeof name === "number" ? name : i) % 8 + 1}`);
+
+  const sections = R.sections;
+  document.title = `Informe SEO · ${R.site}`;
+  document.getElementById("title").textContent = `Informe SEO · ${R.site}`;
+  document.getElementById("subtitle").textContent = `Generado ${R.generated} · ${sections.map(s => s.title).join(" · ")}`;
+  document.getElementById("footer").textContent = `Datos: report/data/${R.site}/`;
+
+  const table = (cols, rows, numCols = []) => `<div class="overflow-auto"><table><thead><tr>${
+    cols.map((c, i) => `<th${numCols.includes(i) ? ' class="num"' : ""}>${esc(c)}</th>`).join("")}</tr></thead><tbody>${
+    rows.join("")}</tbody></table></div>`;
+
+  // ---------- Resumen ----------
+  const allFindings = sections.flatMap(s => s.findings || []);
+  const allActions = sections.flatMap(s => (s.actions || []).map(a => ({...a, _skill: s.title})))
+    .sort((a, b) => (LEVEL[b.impact] || 0) - (LEVEL[a.impact] || 0) || (LEVEL[a.effort] || 0) - (LEVEL[b.effort] || 0)
+      || (a.priority || 99) - (b.priority || 99));
+  const sevParts = Object.entries(SEV).map(([k, [label]]) => [label, allFindings.filter(f => f.severity === k).length])
+    .filter(([, n]) => n).map(([label, n]) => `${n} ${label.toLowerCase()}${n > 1 ? "s" : ""}`);
+
+  let h = `<section><h2>Resumen</h2>
+    <p>${allFindings.length} hallazgos${sevParts.length ? `: ${sevParts.join(", ")}` : ""}.</p>`;
+  h += table(["Módulo", "Puntuación", "Estado", "Hallazgos"], sections.map(s => {
+    const st = scoreState(s.score);
+    return `<tr><td>${esc(s.title)}</td><td class="num">${scoreText(s.score)}</td>
+      <td>${st ? `<span class="tag t-${st}">${STATE[st]}</span>` : "—"}</td><td class="num">${(s.findings || []).length}</td></tr>`;
+  }), [1, 3]);
+  h += `<h3>Plan de acción</h3>`;
+  h += allActions.length
+    ? table(["#", "Acción", "Módulo", "Impacto", "Esfuerzo"], allActions.map((a, i) =>
+        `<tr><td class="num">${i + 1}</td><td>${esc(a.title)}</td><td>${esc(a._skill)}</td><td>${esc(a.impact)}</td><td>${esc(a.effort)}</td></tr>`), [0])
+    : `<p class="empty">Sin acciones todavía.</p>`;
+  h += `</section>`;
+
+  // ---------- Secciones ----------
+  const charts = [];
+  sections.forEach((s, si) => {
+    const st = scoreState(s.score);
+    h += `<section><h2>${esc(s.title)}${s.score != null ? `<span class="score">${scoreText(s.score)} · <span class="tag t-${st}">${STATE[st]}</span></span>` : ""}</h2>
+      <p class="meta">${esc(s.source || "")}</p>`;
+    if (s.summary) h += `<p>${esc(s.summary)}</p>`;
+    if ((s.kpis || []).length) h += `<div class="stats">` + s.kpis.map(k => `<div class="stat">
+        <p class="label">${esc(k.label)}</p>
+        <p class="value">${esc(k.value)}</p>
+        ${k.status === "warn" || k.status === "bad" ? `<p class="tag t-${k.status}">${STATE[k.status]}</p>` : ""}
+        ${k.hint ? `<p class="hint">${esc(k.hint)}</p>` : ""}</div>`).join("") + `</div>`;
+    (s.charts || []).forEach((c, ci) => {
+      const id = `c${si}-${ci}`;
+      charts.push([id, c]);
+      h += `<figure class="chart"><h4>${esc(c.title)}</h4>
+        <div class="chart-box"><canvas id="${id}" role="img" aria-label="${esc(c.title)}"></canvas></div>
+        <details><summary class="meta">Ver datos</summary>${table(["", ...c.datasets.map(d => d.label)],
+          c.labels.map((l, j) => `<tr><td>${esc(l)}</td>${c.datasets.map(d => `<td class="num">${esc(d.data[j])}</td>`).join("")}</tr>`),
+          c.datasets.map((_, i) => i + 1))}</details></figure>`;
+    });
+    const fs = [...(s.findings || [])].sort((a, b) => (SEV[a.severity]?.[1] ?? 9) - (SEV[b.severity]?.[1] ?? 9));
+    if (fs.length) {
+      h += `<h3>Hallazgos</h3>` + fs.map(f => `<details class="finding" ${["critical", "high"].includes(f.severity) ? "open" : ""}>
+        <summary><span class="tag t-${esc(f.severity)}">${esc(SEV[f.severity]?.[0] || f.severity)}</span>${esc(f.title)}</summary>
+        <dl>${f.evidence ? `<dt>Evidencia</dt><dd>${esc(f.evidence)}</dd>` : ""}
+        ${f.impact ? `<dt>Por qué importa</dt><dd>${esc(f.impact)}</dd>` : ""}
+        ${f.recommendation ? `<dt>Recomendación</dt><dd>${esc(f.recommendation)}</dd>` : ""}
+        ${(f.urls || []).length ? `<dt>URLs</dt><dd><ul>${f.urls.map(u => `<li>${esc(u)}</li>`).join("")}</ul></dd>` : ""}</dl>
+      </details>`).join("");
+    }
+    (s.tables || []).forEach(t => {
+      h += `<details><summary>${esc(t.title)} <span class="meta">(${t.truncated || t.rows.length})</span></summary>${
+        table(t.columns, t.rows.map(r => `<tr>${r.map(c => `<td${typeof c === "number" ? ' class="num"' : ""}>${esc(c)}</td>`).join("")}</tr>`))
+      }${t.truncated ? `<p class="meta">Mostrando ${t.rows.length} de ${t.truncated} filas.</p>` : ""}</details>`;
+    });
+    (s.code || []).forEach(c => { h += `<details><summary>${esc(c.title)}</summary><pre><code>${esc(c.content)}</code></pre></details>`; });
+    h += `</section>`;
+  });
+  document.getElementById("app").innerHTML = h;
+
+  // ---------- Gráficas ----------
+  Chart.defaults.color = css("--ink-2");
+  Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+  const grid = css("--grid"), axis = css("--axis");
+  charts.forEach(([id, c]) => {
+    const round = ["doughnut", "pie"].includes(c.type);
+    const kind = { hbar: "bar", stacked: "bar" }[c.type] || c.type;
+    const multi = c.datasets.length > 1;
+    const datasets = c.datasets.map((d, di) => {
+      const base = { label: d.label, data: d.data };
+      if (round) return { ...base, backgroundColor: c.labels.map((_, j) => color(c.colors?.[j], j)), borderColor: "#fff", borderWidth: 2 };
+      const col = color(d.color ?? c.colors?.[di], di);
+      if (kind === "line" || kind === "radar") return { ...base, borderColor: col, backgroundColor: col + "33",
+        borderWidth: 2, pointRadius: 4, pointBackgroundColor: col, fill: kind === "radar", tension: .25 };
+      return { ...base, backgroundColor: !multi && c.colors ? c.labels.map((_, j) => color(c.colors[j], j)) : col,
+        borderRadius: 4, borderSkipped: "start", maxBarThickness: 28 };
+    });
+    const tick = v => c.unit ? `${v}${c.unit}` : v;
+    const hbar = c.type === "hbar", stacked = c.type === "stacked";
+    const scales = round ? {} : kind === "radar"
+      ? { r: { grid: { color: grid }, angleLines: { color: grid }, suggestedMin: 0, suggestedMax: c.max, ticks: { backdropColor: "transparent" } } }
+      : { x: { stacked, grid: { display: hbar, color: grid }, border: { color: axis },
+            ...(hbar ? { beginAtZero: true, max: c.max, ticks: { callback: tick, precision: 0 } } : {}) },
+          y: { stacked, grid: { display: !hbar, color: grid }, border: { display: false },
+            ...(!hbar ? { beginAtZero: true, max: c.max, ticks: { callback: tick, precision: 0 } } : {}) } };
+    new Chart(document.getElementById(id), {
+      type: kind, data: { labels: c.labels, datasets },
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: hbar ? "y" : "x",
+        interaction: { mode: round ? "nearest" : "index", intersect: round },
+        plugins: { legend: { display: round || multi, position: "bottom", labels: { boxWidth: 12, usePointStyle: true } },
+          tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.formattedValue}${c.unit || ""}` } } },
+        scales, cutout: c.type === "doughnut" ? "62%" : undefined }
+    });
+  });
+})();
+</script>
+</body>
+</html>
