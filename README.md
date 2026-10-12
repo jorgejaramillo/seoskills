@@ -10,6 +10,7 @@ y todo termina en un único informe visual: `report/report.html` (Pico CSS + Cha
 | `seo-audit` | `basic-audit/` | Auditoría técnica y on-page con puntuación y plan de acción |
 | `internal-linking` | `internal-linking/` | Grafo de enlaces, huérfanas, profundidad, anchors |
 | `seo-images` | `images/` | Alt, peso, formatos, LCP, CLS, responsive |
+| `no-slop` | `no-slop/` | Analiza un artículo párrafo a párrafo y puntúa de 1 a 100 qué tan slop (relleno genérico de IA) es |
 
 ## Uso rápido
 
