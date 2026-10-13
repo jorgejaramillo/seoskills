@@ -48,6 +48,30 @@
   .num { text-align: right; font-variant-numeric: tabular-nums; }
   pre { white-space: pre-wrap; }
   .empty { color: var(--tx-muted); font-style: italic; }
+  /* Tablas: scroll horizontal en desktop, tarjetas apiladas en móvil */
+  .tbl { overflow-x: auto; }
+  .tbl table { margin-bottom: 0; }
+  @media (max-width: 720px) {
+    .tbl { overflow-x: visible; }
+    .tbl thead { display: none; }
+    .tbl tbody { display: block; }
+    .tbl tbody tr {
+      display: block; width: 100%;
+      padding: .55rem .8rem; margin-bottom: .7rem;
+      background: #fff; border: 1px solid var(--grid); border-radius: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    .tbl tbody td {
+      display: flex; justify-content: space-between; align-items: baseline;
+      gap: 1rem; padding: .32rem 0; border: 0; text-align: left;
+    }
+    .tbl tbody td + td { border-top: 1px dashed var(--grid); }
+    .tbl tbody td::before {
+      content: attr(data-label);
+      flex: 0 0 42%; font-size: .7rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .03em; color: var(--tx-muted);
+    }
+  }
   @media print { details { open: true; } }
 </style>
 </head>
@@ -80,7 +104,7 @@
   document.getElementById("subtitle").textContent = `Generado ${R.generated} · ${sections.map(s => s.title).join(" · ")}`;
   document.getElementById("footer").textContent = `Datos: report/data/${R.site}/`;
 
-  const table = (cols, rows, numCols = []) => `<div class="overflow-auto"><table><thead><tr>${
+  const table = (cols, rows, numCols = []) => `<div class="tbl"><table><thead><tr>${
     cols.map((c, i) => `<th${numCols.includes(i) ? ' class="num"' : ""}>${esc(c)}</th>`).join("")}</tr></thead><tbody>${
     rows.join("")}</tbody></table></div>`;
 
@@ -146,6 +170,14 @@
     h += `</section>`;
   });
   document.getElementById("app").innerHTML = h;
+
+  // Tarjetas en móvil: etiqueta por celda = nombre de columna
+  document.querySelectorAll(".tbl table").forEach(tbl => {
+    const labels = [...tbl.querySelectorAll("thead th")].map(th => th.textContent.trim());
+    tbl.querySelectorAll("tbody tr").forEach(tr => {
+      [...tr.children].forEach((td, i) => td.setAttribute("data-label", labels[i] || ""));
+    });
+  });
 
   // ---------- Gráficas ----------
   Chart.defaults.color = css("--ink-2");

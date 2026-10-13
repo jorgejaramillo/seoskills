@@ -2,9 +2,9 @@
 name: robots-txt
 description: >
   Valida, audita y genera archivos robots.txt para SEO y bots de IA. Úsalo cuando el
-  usuario mencione robots.txt, directivas de rastreo, bloquear o permitir bots (Googlebot,
-  GPTBot, ClaudeBot, PerplexityBot…), crawl budget, o pegue un robots.txt y pregunte
-  "¿está bien?". Funciona con cualquier CMS.
+  usuario mencione robots.txt, directivas de rastreo, bloquear bots (GPTBot, ClaudeBot,
+  PerplexityBot…), crawl budget, o pegue un robots.txt y pregunte "¿está bien?".
+  Funciona con cualquier CMS.
 ---
 
 # robots.txt
@@ -21,7 +21,7 @@ Los tres terminan en el reporte. robots.txt es pequeño: léelo entero, no hace 
 ## Entradas
 
 1. Dominio (o el texto del robots.txt si lo pega).
-2. Para generar: plataforma (WordPress, Shopify, Next…) y **política de IA** (bloquear entrenamiento, bloquear todo, permitir todo). Si no la menciona, no agregues bloques de IA.
+2. Para generar: plataforma (WordPress, Shopify, Next…) y **política de IA** (bloquear entrenamiento, bloquear todo, permitir todo). El robots.txt **solo niega acceso**: la opción "permitir" no se escribe, se omite — la ausencia de reglas ya lo permite todo. Si no la menciona, no agregues bloques de IA.
 3. Opcional: rutas que el usuario quiere comprobar.
 
 ## Flujo
@@ -70,7 +70,7 @@ Revisa, en este orden:
 1. **Indexación**: aplica las reglas de Googlebot a la muestra del sitemap y a las rutas del usuario. Cualquier URL del sitemap bloqueada es un hallazgo alto o crítico. ¿Se bloquean CSS/JS necesarios para renderizar?
 2. **Sitemaps**: declarados, URL absoluta, responden 200, y contienen las páginas que existen.
 3. **Crawl budget**: búsqueda interna, filtros/facetas y parámetros de orden sin bloquear en sitios grandes.
-4. **Bots de IA**: para cada bot de la tabla de referencia, decide si queda bloqueado, permitido o sin regla propia (usa `*`). Error típico: bloquear bots de búsqueda queriendo bloquear solo entrenamiento.
+4. **Bots de IA**: para cada bot de la tabla de referencia, decide si queda **bloqueado** (`Disallow`) o sin regla propia (usa `*`). Nunca escribas reglas para "permitir" un bot: sin regla ya está permitido por defecto. Error típico: bloquear bots de búsqueda queriendo bloquear solo entrenamiento.
 5. **Seguridad**: rutas sensibles expuestas (robots.txt es público).
 6. **Malentendidos**: `Disallow` no es `noindex`; bloquear una URL impide que Google vea su canonical o noindex.
 
@@ -81,6 +81,8 @@ Revisa, en este orden:
 | Entrenamiento IA | GPTBot, ClaudeBot, anthropic-ai, Google-Extended, Applebot-Extended, CCBot, Bytespider, Meta-ExternalAgent, FacebookBot, Amazonbot, cohere-training-data-crawler, Diffbot, AI2Bot |
 | Búsqueda / usuario IA | OAI-SearchBot, ChatGPT-User, Claude-SearchBot, Claude-User, PerplexityBot, Perplexity-User, DuckAssistBot |
 | Buscadores | Googlebot, Bingbot |
+
+La tabla solo sirve para decidir **bloqueos**; no implica crear un grupo `User-agent` por cada bot. Solo se escriben reglas para lo que se quiere negar.
 
 ### 4. Sección del reporte
 
@@ -124,7 +126,8 @@ Empieza en 100: −40 si bloquea todo el sitio o URLs del sitemap importantes ·
 ## Generar un robots.txt
 
 - **Solo** `Disallow` para rutas confirmadas en el sitio (sitemap, navegación o el usuario). Nunca inventes rutas.
-- Sin comentarios ni cabeceras. Orden: `User-agent: *`, luego bots de entrenamiento IA, luego bots de búsqueda IA, `Sitemap:` al final.
+- El robots.txt **no invita ni permite bots**: solo niega acceso. Escribe `User-agent: *` y únicamente grupos `User-agent` para bots que vas a **bloquear** (`Disallow`). No agregues grupos para bots permitidos — sin reglas ya están permitidos.
+- Sin comentarios ni cabeceras. Orden: `User-agent: *`, luego los grupos de bots bloqueados (entrenamiento y búsqueda según la política), `Sitemap:` al final.
 - Antes de entregarlo, pásale los pasos 2 y 3 (sintaxis + prueba de la muestra del sitemap) y confirma que no bloquea nada indexable.
 
 ## Reglas

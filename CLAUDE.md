@@ -26,6 +26,7 @@ Frontmatter (`name`, `description` en español con disparadores) y estas seccion
 - Script solo cuando hay que procesar mucho HTML o contar con exactitud (extractor, grafo, imágenes).
   Si el dato es pequeño y Claude lo puede leer entero (robots.txt), la lógica va en el SKILL.md.
 - Toda salida termina en `python3 report/build_report.py <dominio>`. No generar PDF ni otros formatos salvo que se pida.
+- `template.html` es responsive: en móvil (<720 px) las tablas se renderizan como tarjetas apiladas con etiqueta por celda (`.tbl` + `data-label`). No volver a `overflow-x` a ciegas al editar tablas.
 - Re-ejecutar un script conserva el análisis ya escrito (`write_section` hace merge).
 - Scripts solo con librería estándar de Python (certifi opcional).
 
