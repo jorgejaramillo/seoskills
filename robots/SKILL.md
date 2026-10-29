@@ -128,6 +128,20 @@ Empieza en 100: −40 si bloquea todo el sitio o URLs del sitemap importantes ·
 - **Solo** `Disallow` para rutas confirmadas en el sitio (sitemap, navegación o el usuario). Nunca inventes rutas.
 - El robots.txt **no invita ni permite bots**: solo niega acceso. Escribe `User-agent: *` y únicamente grupos `User-agent` para bots que vas a **bloquear** (`Disallow`). No agregues grupos para bots permitidos — sin reglas ya están permitidos.
 - Sin comentarios ni cabeceras. Orden: `User-agent: *`, luego los grupos de bots bloqueados (entrenamiento y búsqueda según la política), `Sitemap:` al final.
+- Ejemplo con político "bloquear entrenamiento" (solo se escriben los bloqueos; el resto de bots queda permitido por ausencia de reglas):
+  ```text
+  User-agent: *
+  Allow: /
+
+  User-agent: GPTBot
+  Disallow: /
+  User-agent: ClaudeBot
+  Disallow: /
+  User-agent: CCBot
+  Disallow: /
+  Sitemap: https://example.com/sitemap.xml
+  ```
+  No agregues `User-agent: Googlebot` con `Allow` (Google ya rastrea por defecto) ni grupos para bots que no vas a bloquear.
 - Antes de entregarlo, pásale los pasos 2 y 3 (sintaxis + prueba de la muestra del sitemap) y confirma que no bloquea nada indexable.
 
 ## Reglas

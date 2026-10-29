@@ -16,7 +16,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 DATA = HERE / "data"
 # Orden lógico del informe: primero cómo se rastrea, luego qué se ve en cada página
-ORDER = ["cloudflare-crawl", "robots-txt", "seo-audit", "internal-linking", "seo-images"]
+ORDER = ["cloudflare-crawl", "robots-txt", "seo-audit", "internal-linking", "seo-images", "keyword-cluster"]
 REQUIRED = ("skill", "title", "site")
 SEVERITIES = {"critical", "high", "medium", "low"}
 CHART_TYPES = {"bar", "hbar", "stacked", "doughnut", "pie", "radar", "line"}
