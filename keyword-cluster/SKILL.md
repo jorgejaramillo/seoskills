@@ -12,7 +12,6 @@ description: >
 # Clustering de keywords
 
 Convertir una lista de keywords en un mapa de contenido: qué páginas existen, cuáles faltan y cuáles compiten entre sí.
-Referentes: [Semrush](https://www.semrush.com/blog/keyword-clustering/) · [SEOcrawl](https://seocrawl.ai/blog/keyword-clustering) · [OpenSEO](https://openseo.so/docs/skills/keyword-clustering).
 
 ## Cuándo usar
 
