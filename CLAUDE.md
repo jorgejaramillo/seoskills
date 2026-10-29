@@ -17,6 +17,9 @@ crawler/output/<dominio>/   HTML renderizado + _manifest.json + _pages.json   (i
 report/data/<dominio>/      secciones JSON                                    (ignorado en git)
 ```
 
+`title-generator/` y `description-generator/` son skills de **invocación**: sin script y sin sección de reporte;
+reciben consulta + contexto y devuelven opciones en JSON. Son la excepción a la regla de `build_report.py`.
+
 ## Patrón obligatorio de un skill
 
 Frontmatter (`name`, `description` en español con disparadores) y estas secciones, en este orden:

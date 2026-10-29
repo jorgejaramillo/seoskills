@@ -11,10 +11,13 @@ y todo termina en un único informe visual: `report/report.html` (Pico CSS + Cha
 | `internal-linking` | `internal-linking/` | Grafo de enlaces, huérfanas, profundidad, anchors |
 | `seo-images` | `images/` | Alt, peso, formatos, LCP, CLS, responsive |
 | `no-slop` | `no-slop/` | Analiza un artículo párrafo a párrafo y puntúa de 1 a 100 qué tan slop (relleno genérico de IA) es |
+| `title-generator` | `title-generator/` | Propone titles SEO de 45–55 caracteres a partir de una consulta y su contexto |
+| `description-generator` | `description-generator/` | Propone meta descriptions de 150–160 caracteres a partir de la consulta y el title |
 
 ## Uso rápido
 
 `crawler` y `robots` no tienen script: su lógica (curl + jq) está en el propio SKILL.md.
+`title-generator` y `description-generator` no tienen script ni sección de reporte: se invocan a demanda y devuelven JSON.
 
 ```bash
 cp .env.example .env                     # credenciales de Cloudflare (solo para el crawler)

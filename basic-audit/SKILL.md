@@ -56,6 +56,8 @@ Lee `_pages.json` y las tablas generadas. Revisa a mano lo que el script no pued
 intención de búsqueda, calidad del contenido, E-E-A-T, coherencia title↔H1↔contenido.
 Para Core Web Vitals usa PageSpeed Insights (`https://pagespeed.web.dev/`) si el usuario
 lo pide o el sitio es lento; si no hay datos, márcalo como no evaluado.
+Si hay titles fuera de 30–60 o descriptions fuera de 70–160 / duplicadas, **no reescribas a mano**: invoca
+`title-generator` (`../title-generator/SKILL.md`) y luego `description-generator` (`../description-generator/SKILL.md`).
 
 Completa en el JSON: `score`, `summary`, `findings`, `actions` y añade a `tables` la puntuación
 por categoría (no como gráfica: la sección ya tiene una):
